@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Namensschilder Generator V4</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Namensschild-Generator</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Poppins:wght@400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg: #f5f4f1;
+      --panel: rgba(255,255,255,.84);
+      --panel-border: rgba(17,17,17,.08);
+      --text: #111111;
+      --muted: #6d6d6d;
+      --line: rgba(17,17,17,.12);
+      --accent: #111111;
+      --shadow: 0 20px 60px rgba(0,0,0,.08);
+      --radius: 22px;
+      --label-w: 55mm;
+      --label-h: 20mm;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
+    body{
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(0,0,0,.04), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(0,0,0,.03), transparent 25%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .app{
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 18px;
+      min-height: 100vh;
+      padding: 18px;
+    }
+
+    .panel, .preview-wrap{
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .panel{
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand h1{
+      margin:0;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .brand p{
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill{
+      font-size: 12px;
+      color: #222;
+      background: rgba(0,0,0,.05);
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 999px;
+      padding: 8px 10px;
+      white-space: nowrap;
+    }
+
+    .section{
+      margin-bottom: 16px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.65);
+    }
+
+    .section h2{
+      margin: 0 0 12px;
+      font-size: 14px;
+      letter-spacing: .01em;
+      color: #1a1a1a;
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .field:last-child{ margin-bottom: 0; }
+
+    label{
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input, select, textarea, button{
+      font: inherit;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea{
+      width: 100%;
+      border: 1px solid rgba(0,0,0,.12);
+      background: rgba(255,255,255,.92);
+      border-radius: 14px;
+      padding: 11px 12px;
+      color: var(--text);
+      outline: none;
+      transition: .18s ease;
+    }
+
+    textarea{
+      min-height: 210px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(0,0,0,.32);
+      box-shadow: 0 0 0 4px rgba(0,0,0,.06);
+    }
+
+    .help{
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .help code{
+      background: rgba(0,0,0,.05);
+      padding: 1px 6px;
+      border-radius: 999px;
+      color: #222;
+    }
+
+    .toggles{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+    }
+
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      font-size: 13px;
+      color: #222;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(0,0,0,.08);
+    }
+
+    .buttons{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      border: none;
+      border-radius: 14px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: .18s ease;
+      font-weight: 600;
+    }
+
+    .primary{
+      background: #111;
+      color: #fff;
+    }
+
+    .secondary{
+      background: rgba(0,0,0,.06);
+      color: #111;
+    }
+
+    .primary:hover, .secondary:hover{
+      transform: translateY(-1px);
+    }
+
+    .mini{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .preview-wrap{
+      padding: 16px;
+      overflow: auto;
+      position: relative;
+    }
+
+    .preview-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
+    }
+
+    .preview-top h2{
+      margin:0;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .summary{
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pages{
+      display:flex;
+      flex-direction:column;
+      gap: 24px;
+      align-items:flex-start;
+    }
+
+    .page{
+      width: 210mm;
+      height: 297mm;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.16);
+      position: relative;
+      overflow: hidden;
+      transform-origin: top left;
+      box-shadow: 0 12px 40px rgba(0,0,0,.10);
+    }
+
+    .page-label{
+      position:absolute;
+      left:0;
+      top:0;
+      width: 55mm;
+      height: 20mm;
+      display:flex;
+      align-items:stretch;
+      justify-content:stretch;
+      overflow: visible;
+    }
+
+    .page-label img{
+      width: 100%;
+      height: 100%;
+      display:block;
+      object-fit: cover;
+      transform-origin: center center;
+      filter: saturate(1.01);
+    }
+
+    .page-meta{
+      position:absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 11px;
+      color: rgba(0,0,0,.42);
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(0,0,0,.08);
+      padding: 6px 9px;
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      pointer-events:none;
+    }
+
+    .muted-note{
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    input[type="file"]{
+      width: 100%;
+      padding: 9px;
+      border-radius: 14px;
+      border: 1px dashed rgba(0,0,0,.18);
+      background: rgba(255,255,255,.7);
+    }
+
+    @media (max-width: 1100px){
+      .app{
+        grid-template-columns: 1fr;
+      }
+      .page{
+        transform: scale(.70);
+        transform-origin: top left;
+        margin-bottom: -174mm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel">
+      <div class="brand">
+        <div>
+          <h1>Namensschilder</h1>
+          <p>PDF-Generator mit Live-Vorschau, Schneidlinie und Rotation</p>
+        </div>
+        <div class="pill">A4 · 5,5 × 2 cm</div>
+      </div>
+
+      <div class="section">
+        <h2>Namen</h2>
+        <div class="field">
+          <label for="names">Eine Zeile pro Schild. Optional mit Rotation:</label>
+          <textarea id="names" placeholder="Anna&#10;Ben | 0&#10;Lina | 8&#10;Max Mustermann | -6"></textarea>
+          <div class="help">
+            Format pro Zeile: <code>Name</code> oder <code>Name | Rotation</code><br>
+            Rotation in Grad, z. B. <code>-8</code>, <code>0</code>, <code>12</code>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="fileInput">TXT-Datei hochladen</label>
+          <input id="fileInput" type="file" accept=".txt,text/plain" />
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Layout</h2>
+        <div class="grid2">
+          <div class="field">
+            <label for="labelsPerPage">Namensschilder pro A4</label>
+            <select id="labelsPerPage">
+              <option>1</option>
+              <option>2</option>
+              <option>4</option>
+              <option>6</option>
+              <option selected>8</option>
+              <option>10</option>
+              <option>12</option>
+              <option>15</option>
+              <option>16</option>
+              <option>20</option>
+              <option>24</option>
+              <option>30</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="rotationAll">Standard-Rotation</label>
+            <select id="rotationAll">
+              <option value="0">0°</option>
+              <option value="-4">-4°</option>
+              <option value="-8">-8°</option>
+              <option value="4">+4°</option>
+              <option value="8">+8°</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label for="marginLeft">Rand links (mm)</label>
+            <input id="marginLeft" type="number" value="10" min="0" step="0.5">
+          </div>
+          <div class="field">
+            <label for="marginRight">Rand rechts (mm)</label>
+            <input id="marginRight" type="number" value="10" min="0" step="0.5">
+          </div>
+          <div class="field">
+            <label for="marginTop">Rand oben (mm)</label>
+            <input id="marginTop" type="number" value="10" min="0" step="0.5">
+          </div>
+          <div class="field">
+            <label for="marginBottom">Rand unten (mm)</label>
+            <input id="marginBottom" type="number" value="10" min="0" step="0.5">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Ansicht</label>
+          <div class="toggles">
+            <label class="toggle"><input id="showBorder" type="checkbox" checked> Schneidlinie anzeigen</label>
+            <label class="toggle"><input id="showGuides" type="checkbox" checked> Hilfslinien in Vorschau</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Typografie</h2>
+        <div class="grid2">
+          <div class="field">
+            <label for="fontFamily">Schriftart</label>
+            <select id="fontFamily">
+              <option value="Inter">Inter</option>
+              <option value="Poppins">Poppins</option>
+              <option value="Nunito">Nunito</option>
+              <option value="Playfair Display">Playfair Display</option>
+              <option value="Helvetica">Helvetica</option>
+              <option value="Times">Times</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fontWeight">Stärke</label>
+            <select id="fontWeight">
+              <option value="400">Regular</option>
+              <option value="500">Medium</option>
+              <option value="600" selected>SemiBold</option>
+              <option value="700">Bold</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label for="fontSize">Grundschriftgröße</label>
+            <input id="fontSize" type="number" value="28" min="8" max="70" step="1">
+          </div>
+          <div class="field">
+            <label for="textColor">Textfarbe</label>
+            <input id="textColor" type="text" value="#111111">
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label for="accentColor">Linienfarbe</label>
+            <input id="accentColor" type="text" value="#1b1b1b">
+          </div>
+          <div class="field">
+            <label for="cornerRadius">Eckenradius</label>
+            <input id="cornerRadius" type="number" value="10" min="0" max="25" step="1">
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Export</h2>
+        <div class="buttons">
+          <button class="primary" id="pdfBtn">PDF erzeugen</button>
+          <button class="secondary" id="refreshBtn">Vorschau aktualisieren</button>
+        </div>
+        <div class="mini" style="margin-top:10px;">
+          <button class="secondary" id="sampleBtn">Beispiel einfügen</button>
+          <button class="secondary" id="clearBtn">Leeren</button>
+        </div>
+        <div class="muted-note" id="status"></div>
+      </div>
+    </aside>
+
+    <main class="preview-wrap">
+      <div class="preview-top">
+        <div>
+          <h2>Live-Vorschau</h2>
+          <div class="summary" id="summary">Bereit.</div>
+        </div>
+        <div class="pill" id="gridInfo">—</div>
+      </div>
+
+      <div class="pages" id="pages"></div>
+    </main>
+  </div>
+
+<script>
+  const { jsPDF } = window.jspdf;
+
+  const PAGE_W = 210;
+  const PAGE_H = 297;
+
+  const LABEL_W = 55;
+  const LABEL_H = 20;
+
+  const SVG_W = 550;
+  const SVG_H = 200;
+
+  const PACK_GAP_X = 0.5;
+  const PACK_GAP_Y = 0.5;
+
+  const els = {
+    names: document.getElementById('names'),
+    fileInput: document.getElementById('fileInput'),
+    labelsPerPage: document.getElementById('labelsPerPage'),
+    rotationAll: document.getElementById('rotationAll'),
+    marginLeft: document.getElementById('marginLeft'),
+    marginRight: document.getElementById('marginRight'),
+    marginTop: document.getElementById('marginTop'),
+    marginBottom: document.getElementById('marginBottom'),
+    showBorder: document.getElementById('showBorder'),
+    showGuides: document.getElementById('showGuides'),
+    fontFamily: document.getElementById('fontFamily'),
+    fontWeight: document.getElementById('fontWeight'),
+    fontSize: document.getElementById('fontSize'),
+    textColor: document.getElementById('textColor'),
+    accentColor: document.getElementById('accentColor'),
+    cornerRadius: document.getElementById('cornerRadius'),
+    pages: document.getElementById('pages'),
+    summary: document.getElementById('summary'),
+    gridInfo: document.getElementById('gridInfo'),
+    status: document.getElementById('status'),
+    pdfBtn: document.getElementById('pdfBtn'),
+    refreshBtn: document.getElementById('refreshBtn'),
+    sampleBtn: document.getElementById('sampleBtn'),
+    clearBtn: document.getElementById('clearBtn')
+  };
+
+  const sampleText = [
+    "Anna",
+    "Ben | 0",
+    "Lina | 8",
+    "Mara | -4",
+    "Noah",
+    "Sofia | 0",
+    "Emil | -8",
+    "Ida"
+  ].join("\n");
+
+  const measureCanvas = document.createElement('canvas');
+  const measureCtx = measureCanvas.getContext('2d');
+
+  function escapeXml(str) {
+    return String(str)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&apos;');
+  }
+
+  function clamp(n, min, max) {
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function parseNumber(value, fallback) {
+    const n = parseFloat(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function parseLines(raw) {
+    const defaultRotation = parseNumber(els.rotationAll.value, 0);
+    return raw
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => {
+        const parts = line.split('|').map(s => s.trim());
+        return {
+          name: parts[0] || '',
+          rotation: parts.length > 1 ? parseNumber(parts[1], defaultRotation) : defaultRotation
+        };
+      })
+      .filter(item => item.name.length > 0);
+  }
+
+  function getMargins() {
+    return {
+      left: parseNumber(els.marginLeft.value, 10),
+      right: parseNumber(els.marginRight.value, 10),
+      top: parseNumber(els.marginTop.value, 10),
+      bottom: parseNumber(els.marginBottom.value, 10),
+    };
+  }
+
+  function readSettings() {
+    return {
+      fontFamily: els.fontFamily.value,
+      fontWeight: els.fontWeight.value,
+      fontSize: parseNumber(els.fontSize.value, 28),
+      textColor: els.textColor.value || '#111111',
+      accentColor: els.accentColor.value || '#1b1b1b',
+      cornerRadius: parseNumber(els.cornerRadius.value, 10),
+      showBorder: els.showBorder.checked,
+      showGuides: els.showGuides.checked
+    };
+  }
+
+  function factorPairs(n) {
+    const pairs = [];
+    for (let c = 1; c <= n; c++) {
+      if (n % c === 0) pairs.push([c, n / c]);
+    }
+    return pairs;
+  }
+
+  function chooseGrid(total, margins) {
+    const maxCols = Math.max(1, Math.floor((PAGE_W - margins.left - margins.right + PACK_GAP_X) / (LABEL_W + PACK_GAP_X)));
+    const maxRows = Math.max(1, Math.floor((PAGE_H - margins.top - margins.bottom + PACK_GAP_Y) / (LABEL_H + PACK_GAP_Y)));
+
+    const exactFits = factorPairs(total).filter(([c, r]) => c <= maxCols && r <= maxRows);
+
+    if (exactFits.length) {
+      exactFits.sort((a, b) => {
+        const wasteA = (maxCols - a[0]) + (maxRows - a[1]);
+        const wasteB = (maxCols - b[0]) + (maxRows - b[1]);
+        if (wasteA !== wasteB) return wasteA - wasteB;
+        const diffA = Math.abs(a[0] - a[1]);
+        const diffB = Math.abs(b[0] - b[1]);
+        if (diffA !== diffB) return diffA - diffB;
+        return b[1] - a[1];
+      });
+
+      const [cols, rows] = exactFits[0];
+      return {
+        cols,
+        rows,
+        gapX: PACK_GAP_X,
+        gapY: PACK_GAP_Y,
+        capacity: cols * rows
+      };
+    }
+
+    let best = null;
+    for (let cols = 1; cols <= maxCols; cols++) {
+      const rows = Math.ceil(total / cols);
+      if (rows > maxRows) continue;
+
+      const capacity = cols * rows;
+      const waste = capacity - total;
+      const balance = Math.abs(cols - rows);
+      const score = waste * 100 + balance * 5 + cols;
+
+      if (!best || score < best.score) {
+        best = { cols, rows, gapX: PACK_GAP_X, gapY: PACK_GAP_Y, capacity, score };
+      }
+    }
+
+    if (best) return best;
+
+    const cols = maxCols;
+    const rows = Math.max(1, Math.min(maxRows, Math.ceil(total / cols)));
+    return { cols, rows, gapX: PACK_GAP_X, gapY: PACK_GAP_Y, capacity: cols * rows };
+  }
+
+  function splitCandidate(name) {
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    const candidates = [[name.trim()]];
+
+    if (words.length >= 2) {
+      for (let i = 1; i < words.length; i++) {
+        const a = words.slice(0, i).join(' ');
+        const b = words.slice(i).join(' ');
+        candidates.push([a, b]);
+      }
+    }
+
+    return candidates;
+  }
+
+  function fontSpec(fontFamily, fontWeight, fontSizePx) {
+    return `${fontWeight} ${fontSizePx}px "${fontFamily}"`;
+  }
+
+  function fitTextLayout(name, settings) {
+    const maxWidth = SVG_W - 2 * 26;
+    const maxHeight = SVG_H - 2 * 34;
+
+    let best = {
+      lines: [name],
+      size: 24,
+      lineGap: 8,
+      totalHeight: 24,
+    };
+
+    for (const lines of splitCandidate(name)) {
+      let low = 8;
+      let high = 92;
+      let found = 8;
+
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        measureCtx.font = fontSpec(settings.fontFamily, settings.fontWeight, mid);
+
+        const widths = lines.map(line => measureCtx.measureText(line).width);
+        const widthOk = Math.max(...widths) <= maxWidth;
+        const lineGap = Math.max(3, Math.round(mid * 0.18));
+        const totalHeight = lines.length * mid + (lines.length - 1) * lineGap;
+        const heightOk = totalHeight <= maxHeight;
+
+        if (widthOk && heightOk) {
+          found = mid;
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
+      }
+
+      const lineGap = Math.max(3, Math.round(found * 0.18));
+      const totalHeight = lines.length * found + (lines.length - 1) * lineGap;
+
+      if (found > best.size) {
+        best = { lines, size: found, lineGap, totalHeight };
+      }
+    }
+
+    return best;
+  }
+
+  function createLabelSvg(item, settings) {
+    const radius = clamp(settings.cornerRadius, 0, 25);
+    const frameInset = 14;
+    const strokeWidth = 2.2;
+
+    const layout = fitTextLayout(item.name, settings);
+    const lines = layout.lines;
+    const fontSize = Math.max(8, Math.min(layout.size, settings.fontSize ? Math.min(layout.size, settings.fontSize * 1.15) : layout.size));
+    const lineGap = layout.lineGap;
+
+    const centerY = 100;
+    const firstY = centerY - layout.totalHeight / 2 + fontSize * 0.82;
+
+    const textEls = lines.map((ln, idx) => {
+      const y = firstY + idx * (fontSize + lineGap);
+      return `<text x="275" y="${y.toFixed(2)}" text-anchor="middle"
+        font-family="${escapeXml(settings.fontFamily)}"
+        font-size="${fontSize.toFixed(2)}"
+        font-weight="${settings.fontWeight}"
+        fill="${escapeXml(settings.textColor)}">${escapeXml(ln)}</text>`;
+    }).join('');
+
+    return `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${SVG_W}" height="${SVG_H}" viewBox="0 0 ${SVG_W} ${SVG_H}">
+        <rect width="${SVG_W}" height="${SVG_H}" rx="${radius}" fill="#ffffff"/>
+        ${
+          settings.showBorder ? `
+          <rect x="${frameInset}" y="${frameInset}" width="${SVG_W - frameInset * 2}" height="${SVG_H - frameInset * 2}"
+            rx="${Math.max(0, radius - 4)}"
+            fill="none"
+            stroke="${escapeXml(settings.accentColor)}"
+            stroke-width="${strokeWidth}"
+            stroke-dasharray="7 6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            opacity="0.95"/>
+          ` : ''
+        }
+        ${textEls}
+      </svg>
+    `;
+  }
+
+  function svgToDataUri(svg) {
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
+  async function svgToPngDataUri(svg, scale = 4) {
+    const img = new Image();
+    img.src = svgToDataUri(svg);
+    await img.decode();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(SVG_W * scale);
+    canvas.height = Math.round(SVG_H * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/png');
+  }
+
+  function chunk(items, size) {
+    const out = [];
+    for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+    return out;
+  }
+
+  function updateStatus(text) {
+    els.status.textContent = text || '';
+  }
+
+  function renderPreview() {
+    const settings = readSettings();
+    const margins = getMargins();
+    const items = parseLines(els.names.value);
+    const labelsPerPage = parseInt(els.labelsPerPage.value, 10);
+    const grid = chooseGrid(labelsPerPage, margins);
+    const pages = chunk(items, grid.capacity);
+
+    els.pages.innerHTML = '';
+    els.gridInfo.textContent = `${grid.cols} × ${grid.rows} · ${grid.capacity} pro Seite`;
+    els.summary.textContent = `${items.length} Namensschilder · ${pages.length || 0} Seite(n) · ${LABEL_W} × ${LABEL_H} mm`;
+
+    if (!items.length) {
+      const empty = document.createElement('div');
+      empty.style.padding = '18px';
+      empty.style.color = 'var(--muted)';
+      empty.textContent = 'Keine Namen eingetragen.';
+      els.pages.appendChild(empty);
+      return;
+    }
+
+    pages.forEach((pageItems) => {
+      const page = document.createElement('div');
+      page.className = 'page';
+
+      if (settings.showGuides) {
+        const guide = document.createElement('div');
+        guide.className = 'page-meta';
+        guide.textContent = `Rand L ${margins.left} · R ${margins.right} · O ${margins.top} · U ${margins.bottom} mm`;
+        page.appendChild(guide);
+      }
+
+      const innerW = PAGE_W - margins.left - margins.right;
+      const innerH = PAGE_H - margins.top - margins.bottom;
+      const totalW = grid.cols * LABEL_W + (grid.cols - 1) * grid.gapX;
+      const totalH = grid.rows * LABEL_H + (grid.rows - 1) * grid.gapY;
+      const offsetX = margins.left + Math.max(0, (innerW - totalW) / 2);
+      const offsetY = margins.top + Math.max(0, (innerH - totalH) / 2);
+
+      pageItems.forEach((item, index) => {
+        const col = index % grid.cols;
+        const row = Math.floor(index / grid.cols);
+
+        const x = offsetX + col * (LABEL_W + grid.gapX);
+        const y = offsetY + row * (LABEL_H + grid.gapY);
+
+        const svg = createLabelSvg(item, settings);
+        const imgSrc = svgToDataUri(svg);
+
+        const label = document.createElement('div');
+        label.className = 'page-label';
+        label.style.left = `${x}mm`;
+        label.style.top = `${y}mm`;
+        label.style.width = `${LABEL_W}mm`;
+        label.style.height = `${LABEL_H}mm`;
+
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        img.alt = item.name;
+        img.style.transform = `rotate(${item.rotation || 0}deg)`;
+
+        label.appendChild(img);
+        page.appendChild(label);
+      });
+
+      els.pages.appendChild(page);
+    });
+
+    updateStatus('Vorschau aktualisiert. Die PDF-Ausgabe nutzt dieselben Maße und denselben Aufbau.');
+  }
+
+  async function generatePdf() {
+    const settings = readSettings();
+    const margins = getMargins();
+    const items = parseLines(els.names.value);
+
+    if (!items.length) {
+      updateStatus('Bitte zuerst Namen eintragen.');
+      return;
+    }
+
+    const labelsPerPage = parseInt(els.labelsPerPage.value, 10);
+    const grid = chooseGrid(labelsPerPage, margins);
+    const pages = chunk(items, grid.capacity);
+
+    updateStatus('PDF wird erzeugt ...');
+
+    const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+
+    for (let p = 0; p < pages.length; p++) {
+      if (p > 0) pdf.addPage();
+
+      const pageItems = pages[p];
+      const innerW = PAGE_W - margins.left - margins.right;
+      const innerH = PAGE_H - margins.top - margins.bottom;
+      const totalW = grid.cols * LABEL_W + (grid.cols - 1) * grid.gapX;
+      const totalH = grid.rows * LABEL_H + (grid.rows - 1) * grid.gapY;
+      const offsetX = margins.left + Math.max(0, (innerW - totalW) / 2);
+      const offsetY = margins.top + Math.max(0, (innerH - totalH) / 2);
+
+      for (let i = 0; i < pageItems.length; i++) {
+        const item = pageItems[i];
+        const col = i % grid.cols;
+        const row = Math.floor(i / grid.cols);
+
+        const x = offsetX + col * (LABEL_W + grid.gapX);
+        const y = offsetY + row * (LABEL_H + grid.gapY);
+
+        const svg = createLabelSvg(item, settings);
+        const png = await svgToPngDataUri(svg, 6);
+
+        pdf.addImage(png, 'PNG', x, y, LABEL_W, LABEL_H, undefined, 'FAST');
+      }
+    }
+
+    pdf.save('namensschilder.pdf');
+    updateStatus(`PDF erstellt: ${items.length} Schilder auf ${pages.length} Seite(n).`);
+  }
+
+  function wireInputs() {
+    const rerender = () => renderPreview();
+
+    [
+      els.names, els.labelsPerPage, els.rotationAll,
+      els.marginLeft, els.marginRight, els.marginTop, els.marginBottom,
+      els.showBorder, els.showGuides, els.fontFamily, els.fontWeight,
+      els.fontSize, els.textColor, els.accentColor, els.cornerRadius
+    ].forEach(el => {
+      el.addEventListener('input', rerender);
+      el.addEventListener('change', rerender);
+    });
+
+    els.fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      els.names.value = text;
+      renderPreview();
+    });
+
+    els.pdfBtn.addEventListener('click', generatePdf);
+    els.refreshBtn.addEventListener('click', renderPreview);
+
+    els.sampleBtn.addEventListener('click', () => {
+      els.names.value = sampleText;
+      renderPreview();
+    });
+
+    els.clearBtn.addEventListener('click', () => {
+      els.names.value = '';
+      renderPreview();
+    });
+  }
+
+  async function init() {
+    wireInputs();
+    els.names.value = sampleText;
+    await document.fonts.ready;
+    renderPreview();
+  }
+
+  init();
+</script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
